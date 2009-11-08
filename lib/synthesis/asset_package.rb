@@ -154,25 +154,38 @@ module Synthesis
         end
       end
 
-      def compress_js(source)
-        jsmin_path = "#{RAILS_ROOT}/vendor/plugins/asset_packager/lib"
-        tmp_path = "#{RAILS_ROOT}/tmp/#{@target}_packaged"
+      #MODIFIED TO USE GOOGLE CLOSURE API
+      def compress_js(source, opts ={})
+        
+        options = {:level => "WHITESPACE_ONLY",:format => "text",:info => "compiled_code"}
+        options.merge!(opts)                    
+        options[:js_code] = source 
+        
+        api_url = "http://closure-compiler.appspot.com/compile"
+
+        #CREATE POST TO GOOGLE AND RETURN CLOSURE COMPILED CODE
+        Net::HTTP.post_form(URI.parse(api_url), options).body
+          
+              
+        #OLD JSMIN CODE      
+        #jsmin_path = "#{RAILS_ROOT}/vendor/plugins/asset_packager/lib"
+        #tmp_path = "#{RAILS_ROOT}/tmp/#{@target}_packaged"
       
         # write out to a temp file
-        File.open("#{tmp_path}_uncompressed.js", "w") {|f| f.write(source) }
+        #File.open("#{tmp_path}_uncompressed.js", "w") {|f| f.write(source) }
       
         # compress file with JSMin library
-        `ruby #{jsmin_path}/jsmin.rb <#{tmp_path}_uncompressed.js >#{tmp_path}_compressed.js \n`
+        #{}`ruby #{jsmin_path}/jsmin.rb <#{tmp_path}_uncompressed.js >#{tmp_path}_compressed.js \n`
 
         # read it back in and trim it
-        result = ""
-        File.open("#{tmp_path}_compressed.js", "r") { |f| result += f.read.strip }
+        #result = ""
+        #File.open("#{tmp_path}_compressed.js", "r") { |f| result += f.read.strip }
   
         # delete temp files if they exist
-        File.delete("#{tmp_path}_uncompressed.js") if File.exists?("#{tmp_path}_uncompressed.js")
-        File.delete("#{tmp_path}_compressed.js") if File.exists?("#{tmp_path}_compressed.js")
+        #File.delete("#{tmp_path}_uncompressed.js") if File.exists?("#{tmp_path}_uncompressed.js")
+        #File.delete("#{tmp_path}_compressed.js") if File.exists?("#{tmp_path}_compressed.js")
 
-        result
+        #result
       end
   
       def compress_css(source)
