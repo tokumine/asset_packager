@@ -1,3 +1,5 @@
+require 'net/http'
+require 'uri'
 module Synthesis
   class AssetPackage
 
