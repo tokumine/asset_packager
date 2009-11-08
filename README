@@ -25,8 +25,11 @@ This Rails Plugin was inspired by Cal Henderson's article
 "Serving JavaScript Fast" on Vitamin:
 http://www.thinkvitamin.com/features/webapps/serving-javascript-fast
 
-It also uses the Ruby JavaScript Minifier created by 
-Douglas Crockford.
+It uses the Google Closure Compiler API to compress JS.
+http://closure-compiler.appspot.com
+
+If Google Closure compilation throws errors, it uses the Ruby 
+JavaScript Minifier created by Douglas Crockford.
 http://www.crockford.com/javascript/jsmin.html
 
 == Key Features
