@@ -151,22 +151,31 @@ module Synthesis
     
       def compressed_file
         case @asset_type
-          when "javascripts" then compress_js(merged_file)
+          when "javascripts" then compress_js()
           when "stylesheets" then compress_css(merged_file)
         end
       end
 
       #MODIFIED TO USE GOOGLE CLOSURE API
-      def compress_js(source, opts ={})
-        
-        options = {:level => "WHITESPACE_ONLY",:format => "text",:info => "compiled_code"}
+      def compress_js(opts = {})
+        require 'net/http'
+        require 'uri'
+
+        #SETUP GOOGLE CLOSURE OPTIONS
+        options = {:compilation_level => "SIMPLE_OPTIMIZATIONS", # WHITESPACE_ONLY, SIMPLE_OPTIMIZATIONS, ADVANCED_OPTIMIZATIONS
+                   :output_format => "text",
+                   :output_info => "compiled_code"}
         options.merge!(opts)                    
-        options[:js_code] = source 
-        
         api_url = "http://closure-compiler.appspot.com/compile"
 
         #CREATE POST TO GOOGLE AND RETURN CLOSURE COMPILED CODE
-        Net::HTTP.post_form(URI.parse(api_url), options).body
+        #GOOGLE DOESNT LIKE REQUESTS OVER 195KB, SO SEND EACH SOURCE AT A TIME
+        output = []
+        @sources.each {|s|
+          options[:js_code] = File.open("#{@asset_path}/#{s}.#{@extension}", "r") { |f| f.read }
+          output << Net::HTTP.post_form(URI.parse(api_url), options).body
+        }
+        output.join
           
               
         #OLD JSMIN CODE      
