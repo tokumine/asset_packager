@@ -177,9 +177,7 @@ module Synthesis
         options = {:compilation_level => "SIMPLE_OPTIMIZATIONS", 
                    :output_format => "text",
                    :output_info => "errors"}                    
-        a=closure_call(options)           
-        puts a.inspect           
-        a.blank? ? true : false
+        closure_call(options).blank? ? true : false
       end
 
       def closure_compile
