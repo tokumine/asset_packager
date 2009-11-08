@@ -25,7 +25,8 @@ This Rails Plugin was inspired by Cal Henderson's article
 "Serving JavaScript Fast" on Vitamin:
 http://www.thinkvitamin.com/features/webapps/serving-javascript-fast
 
-It uses the Google Closure Compiler API to compress JS.
+It uses the Google Closure Compiler API to compress JS using 
+SIMPLE_OPTIMIZATIONS compilation level
 http://closure-compiler.appspot.com
 
 If Google Closure compilation throws errors, it uses the Ruby 

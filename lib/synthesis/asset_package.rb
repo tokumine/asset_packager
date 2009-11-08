@@ -175,7 +175,7 @@ module Synthesis
         closure_call(options).blank? ? true : false
       end
 
-      def closure_compress
+      def closure_compile
         options = {:compilation_level => "SIMPLE_OPTIMIZATIONS", 
                    :output_format => "text",
                    :output_info => "compiled_code"}                    
@@ -185,7 +185,7 @@ module Synthesis
       def compress_js(source)
 
         #Google Closure - API call limit throttle will also cause this to fail         
-        return closure_compress if closure_safe?
+        return closure_compile if closure_safe?
 
         #jsmin      
         puts "Compressing using local jsmin."
