@@ -163,11 +163,11 @@ module Synthesis
         output = []
         @sources.each do |s|
           options[:js_code] = File.open("#{@asset_path}/#{s}.#{@extension}", "r") { |f| f.read }
-          compiled_js = Net::HTTP.post_form(URI.parse(api_url), options).body
-          if compiled_js == "Error(22): Too many compiles performed recently.  Try again later."
-            throw ClosureCompilerApiOverload
+          closure_return = Net::HTTP.post_form(URI.parse(api_url), options).body
+          if closure_return == "Error(22): Too many compiles performed recently.  Try again later.\n"
+            raise "Too many calls to the Closure API "
           else
-            output << compiled_js
+            output << closure_return
           end
         end
         output.join
@@ -177,7 +177,9 @@ module Synthesis
         options = {:compilation_level => "SIMPLE_OPTIMIZATIONS", 
                    :output_format => "text",
                    :output_info => "errors"}                    
-        closure_call(options).blank? ? true : false
+        a=closure_call(options)           
+        puts a.inspect           
+        a.blank? ? true : false
       end
 
       def closure_compile
@@ -190,7 +192,11 @@ module Synthesis
       def compress_js(source)
 
         #Google Closure - API call limit throttle will also cause this to fail         
-        return closure_compile if closure_safe?
+        begin          
+          return closure_compile if closure_safe?
+        rescue RuntimeError => e
+          print e
+        end
 
         #jsmin      
         puts "Compressing using local jsmin."
