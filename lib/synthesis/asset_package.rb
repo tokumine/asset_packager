@@ -151,52 +151,62 @@ module Synthesis
     
       def compressed_file
         case @asset_type
-          when "javascripts" then compress_js()
+          when "javascripts" then compress_js(merged_file)
           when "stylesheets" then compress_css(merged_file)
         end
       end
 
-      #MODIFIED TO USE GOOGLE CLOSURE API
-      def compress_js(opts = {})
+      def closure_call options
         require 'net/http'
         require 'uri'
-
-        #SETUP GOOGLE CLOSURE OPTIONS
-        options = {:compilation_level => "SIMPLE_OPTIMIZATIONS", # WHITESPACE_ONLY, SIMPLE_OPTIMIZATIONS, ADVANCED_OPTIMIZATIONS
-                   :output_format => "text",
-                   :output_info => "compiled_code"}
-        options.merge!(opts)                    
-        api_url = "http://closure-compiler.appspot.com/compile"
-
-        #CREATE POST TO GOOGLE AND RETURN CLOSURE COMPILED CODE
-        #GOOGLE DOESNT LIKE REQUESTS OVER 195KB, SO SEND EACH SOURCE AT A TIME
+        api_url = "http://closure-compiler.appspot.com/compile"        
         output = []
         @sources.each {|s|
           options[:js_code] = File.open("#{@asset_path}/#{s}.#{@extension}", "r") { |f| f.read }
           output << Net::HTTP.post_form(URI.parse(api_url), options).body
         }
         output.join
-          
-              
-        #OLD JSMIN CODE      
-        #jsmin_path = "#{RAILS_ROOT}/vendor/plugins/asset_packager/lib"
-        #tmp_path = "#{RAILS_ROOT}/tmp/#{@target}_packaged"
-      
+      end
+
+      def closure_safe?
+        options = {:compilation_level => "SIMPLE_OPTIMIZATIONS", 
+                   :output_format => "text",
+                   :output_info => "errors"}                    
+        closure_call(options).blank? ? true : false
+      end
+
+      def closure_compress
+        options = {:compilation_level => "SIMPLE_OPTIMIZATIONS", 
+                   :output_format => "text",
+                   :output_info => "compiled_code"}                    
+        closure_call(options)
+      end
+
+      def compress_js(source)
+
+        #Google Closure - API call limit throttle will also cause this to fail         
+        return closure_compress if closure_safe?
+
+        #jsmin      
+        puts "Compressing using local jsmin."
+        jsmin_path = "#{RAILS_ROOT}/vendor/plugins/asset_packager/lib"
+        tmp_path = "#{RAILS_ROOT}/tmp/#{@target}_packaged"
+
         # write out to a temp file
-        #File.open("#{tmp_path}_uncompressed.js", "w") {|f| f.write(source) }
-      
+        File.open("#{tmp_path}_uncompressed.js", "w") {|f| f.write(source) }
+
         # compress file with JSMin library
-        #{}`ruby #{jsmin_path}/jsmin.rb <#{tmp_path}_uncompressed.js >#{tmp_path}_compressed.js \n`
+        `ruby #{jsmin_path}/jsmin.rb <#{tmp_path}_uncompressed.js >#{tmp_path}_compressed.js \n`
 
         # read it back in and trim it
-        #result = ""
-        #File.open("#{tmp_path}_compressed.js", "r") { |f| result += f.read.strip }
-  
-        # delete temp files if they exist
-        #File.delete("#{tmp_path}_uncompressed.js") if File.exists?("#{tmp_path}_uncompressed.js")
-        #File.delete("#{tmp_path}_compressed.js") if File.exists?("#{tmp_path}_compressed.js")
+        result = ""
+        File.open("#{tmp_path}_compressed.js", "r") { |f| result += f.read.strip }
 
-        #result
+        # delete temp files if they exist
+        File.delete("#{tmp_path}_uncompressed.js") if File.exists?("#{tmp_path}_uncompressed.js")
+        File.delete("#{tmp_path}_compressed.js") if File.exists?("#{tmp_path}_compressed.js")
+
+        result
       end
   
       def compress_css(source)
