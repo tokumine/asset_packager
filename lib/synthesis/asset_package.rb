@@ -161,10 +161,15 @@ module Synthesis
         require 'uri'
         api_url = "http://closure-compiler.appspot.com/compile"        
         output = []
-        @sources.each {|s|
+        @sources.each do |s|
           options[:js_code] = File.open("#{@asset_path}/#{s}.#{@extension}", "r") { |f| f.read }
-          output << Net::HTTP.post_form(URI.parse(api_url), options).body
-        }
+          compiled_js = Net::HTTP.post_form(URI.parse(api_url), options).body
+          if compiled_js == "Error(22): Too many compiles performed recently.  Try again later."
+            throw ClosureCompilerApiOverload
+          else
+            output << compiled_js
+          end
+        end
         output.join
       end
 
