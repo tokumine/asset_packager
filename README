@@ -109,7 +109,7 @@ stylesheets:
 3. Run the rake task "asset:packager:build_all" to generate the compressed, merged versions
 for each package. Whenever you rearrange the yaml file, you'll need to run this task again. 
 
-Merging and compressing is expensive, so this is something we want to do once, not every time
+Merging and compressing is *very* expensive, so this is something we want to do once, not every time
 your app starts. Thats why its a rake task. You can run this task via Capistrano when deploying
 to avoid an initially slow request the first time a page is generated. 
 
