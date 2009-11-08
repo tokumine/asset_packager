@@ -1,6 +1,7 @@
 require File.dirname(__FILE__) + '/../../../../config/environment'
 require 'test/unit'
 require 'mocha'
+include ActionController::TestCase::Assertions
 
 $asset_packages_yml = YAML.load_file("#{RAILS_ROOT}/vendor/plugins/asset_packager/test/asset_packages.yml")
 $asset_base_path = "#{RAILS_ROOT}/vendor/plugins/asset_packager/test/assets"
