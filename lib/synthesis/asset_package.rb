@@ -163,9 +163,7 @@ module Synthesis
         output = []
         @sources.each {|s|
           options[:js_code] = File.open("#{@asset_path}/#{s}.#{@extension}", "r") { |f| f.read }
-          compiled_js = Net::HTTP.post_form(URI.parse(api_url), options).body
-          retry if compiled_js == "Error(22): Too many compiles performed recently.  Try again later."
-          output << compiled_js
+          output << Net::HTTP.post_form(URI.parse(api_url), options).body
         }
         output.join
       end
